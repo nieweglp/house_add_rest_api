@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 from requests import get
 from uuid import uuid4
 
+# POPRAW ADD na AD !!!!!!!!!!!!!!!!!!
+
 
 def get_urls(pages=2):
     """Function returns add urls for given number of pages.
@@ -12,17 +14,17 @@ def get_urls(pages=2):
     """
 
     for current_page in range(1, pages):
-        url = 'https://www.gumtree.pl/s-mieszkania-i-domy-sprzedam-i-kupie/page-{0}/v1c9073p{0}'.format(current_page)
-        page = get(url)
+        main_url = 'https://www.gumtree.pl/s-mieszkania-i-domy-sprzedam-i-kupie/page-{0}/v1c9073p{0}'.format(current_page)
+        page = get(main_url)
         soup = BeautifulSoup(page.text, 'html.parser')
         base_url = 'https://www.gumtree.pl'
-        add_urls = []
+        ad_urls = []
         for link in soup.find_all('a', {'class': 'href-link'}, href=True):
-            add_urls.append(base_url + link['href'])
-    return add_urls
+            ad_urls.append(base_url + link['href'])
+    return ad_urls
 
 
-def translate_dict_keys(list_of_add_dicts):
+def translate_dict_keys(list_of_ad_dicts):
     """Function translate dictionary keys from Polish names to English.
     Parameters:
         list_of_add_dicts(dict): Dict of add attributtes.
@@ -36,11 +38,11 @@ def translate_dict_keys(list_of_add_dicts):
                     'Liczba pokoi': 'room_number', 'Liczba łazienek': 'baths_number',
                     'Parking': 'parking', 'Wielkość (m2)': 'size',
                     'Lokalizacja': 'location', 'Na sprzedaż przez': 'sold_by'}
-    translated_add_dict = {}
-    for key in list_of_add_dicts.keys():
+    translated_ad_dict = {}
+    for key in list_of_ad_dicts.keys():
         if key in translated_keys.keys():
-            translated_add_dict[translated_keys[key]] = list_of_add_dicts[key]
-    return translated_add_dict
+            translated_ad_dict[translated_keys[key]] = list_of_ad_dicts[key]
+    return translated_ad_dict
 
 def scrape_add(add_urls):
     """Function scrape advertisements for a given urls.
