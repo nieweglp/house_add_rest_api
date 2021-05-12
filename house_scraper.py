@@ -2,20 +2,11 @@ from bs4 import BeautifulSoup
 from requests import get
 import re
 import pandas as pd
+from uuid import uuid4
 
 
-LIMIT = 2
-
-cols = ['Data dodania', 'Rodzaj nieruchomości', 'Liczba pokoi',
-       'Liczba łazienek', 'Parking', 'Wielkość (m2)', 'Lokalizacja', 'Tytuł',
-       'Cena']
-
-df = pd.DataFrame(columns=cols)
-
-def get_urls():
-    # if LIMIT == 1:
-
-    for current_page in range(1, LIMIT):
+def get_urls(pages):
+    for current_page in range(1, pages):
         url = 'https://www.gumtree.pl/s-mieszkania-i-domy-sprzedam-i-kupie/warszawa/page-{0}/v1c9073l3200008p{0}'.format(current_page)
         page = get(url)
         soup = BeautifulSoup(page.text, 'html.parser')
@@ -26,6 +17,12 @@ def get_urls():
     return add_urls
 
 def scrape_add(add_urls):
+    translated_keys = {'id': 'id', 'Tytuł': 'title', 'Cena': 'prize',
+                        'Opis': 'content', 'Data dodania': 'added_date',
+                        'Rodzaj nieruchomości': 'real_estate_type',
+                        'Liczba pokoi': 'room_number', 'Liczba łazienek': 'baths_number',
+                        'Parking': 'parking', 'Wielkość (m2)': 'size',
+                        'Lokalizacja': 'location'}
     list_of_add_dicts = []
     for url in add_urls:
         page_add = get(url)
@@ -36,34 +33,35 @@ def scrape_add(add_urls):
                         'Parking',  'Wielkość (m2)']
 
         add_fields_dict = {}
-        for field in field_name:
-            try:
-                field_value = soup_add.find(text=field).findNext('span').contents[0]
-                add_fields_dict[field] = field_value
-            except:
-                continue
+        add_fields_dict['id'] = str(uuid4())
+        # for field in field_name:
+        #     try:
+        #         field_value = soup_add.find(text=field).findNext('span').contents[0]
+        #         add_fields_dict[field] = field_value
+        #     except:
+        #         continue
 
-        location = soup_add.find_all('div', {'class': 'location'})
-        for loc in location:
-            location = loc.get_text()
+        # location = soup_add.find_all('div', {'class': 'location'})
+        # for loc in location:
+        #     location = loc.get_text()
 
-        add_fields_dict['Lokalizacja'] = location
+        # add_fields_dict['Lokalizacja'] = location
 
         add_title = soup_add.find('span', class_='myAdTitle').text
         add_fields_dict['Tytuł'] = add_title.replace('\xa0', '')
 
-        price = soup_add.find('span', class_='amount').text
-        add_fields_dict['Cena'] = price.replace('\xa0', '')
-        # df_temp = pd.DataFrame(add_fields_dict, index=[0])
-        # df = df.append(df_temp, ignore_index=True)
-        # df.to_csv('gum_tree_ads.csv', index=False)
-        list_of_add_dicts.append(add_fields_dict)
+        # price = soup_add.find('span', class_='amount').text
+        # add_fields_dict['Cena'] = price.replace('\xa0', '')
+
+        # content = soup_add.find('div', class_='description').text
+        # add_fields_dict['Opis'] = content
+
+        translated_add_dict = {}
+        for key in add_fields_dict.keys():
+            if key in translated_keys.keys():
+                translated_add_dict[translated_keys[key]] = add_fields_dict[key]
+            
+        list_of_add_dicts.append(translated_add_dict)
+
+
     return list_of_add_dicts
-
-# def main():
-#     urls = get_urls()
-#     scrape_add(urls)
-#     # print(output)
-
-# if __name__ == "__main__":
-#     main()
