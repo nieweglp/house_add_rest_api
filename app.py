@@ -3,8 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from house_scraper_gum_tree import get_urls, scrape_add
 
-
-
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
@@ -28,6 +26,7 @@ class Add(db.Model):
     parking = db.Column(db.String())
     size = db.Column(db.Integer())
     location = db.Column(db.String())
+    
     def to_dict(self):
         return {'id': self.id, 'title': self.title, 'prize': self.prize,
                 'content': self.content, 'added_date': self.added_date, 
@@ -38,7 +37,8 @@ class Add(db.Model):
 
 @app.route('/scrape')
 def scrape():
-    gum_tree_urls = get_urls(pages=PAGES)
+    pages = request.args.get('page', default = PAGES, type = int)
+    gum_tree_urls = get_urls(pages=pages)
     gum_tree_adds = scrape_add(gum_tree_urls)
     for add in gum_tree_adds:
         adds_to_db = Add(**add)
@@ -54,7 +54,12 @@ def load_data():
 
 @app.route('/')
 def main():
-    return "Hello"
+    content = """ <p><h1>Hello, this is REST API for web scraping.</p></h1>
+                To see all data in sqlite database insert: http://localhost:5000/data<br>
+                If you want to scrape ads insert: http://localhost:5000/scrape<br>
+                You can specify how many pages you want to scrape if you put parameter ?page=<br>
+                Enjoy! """
+    return content
 
 
 if __name__ == '__main__':

@@ -2,8 +2,6 @@ from bs4 import BeautifulSoup
 from requests import get
 from uuid import uuid4
 
-# POPRAW ADD na AD !!!!!!!!!!!!!!!!!!
-
 
 def get_urls(pages=2):
     """Function returns add urls for given number of pages.
