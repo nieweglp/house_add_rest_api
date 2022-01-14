@@ -1,0 +1,4 @@
+beautifulsoup4
+flask
+flask_sqlalchemy
+requests

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import os
-from house_scraper_gum_tree import get_urls, scrape_add
+from scrapers.house_scraper_gum_tree import get_urls, scrape_add
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
